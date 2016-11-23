@@ -40,13 +40,16 @@ class Huffman {
         //todo read chunkSize bytes into buffer (detect end of stream and adjust)
         byte[] buffer = new byte[chunkSize];
         Node rootParent = buildTree(buffer, cnt);
+        Map<Byte, Bits> byteBitsMap = new HashMap<>();
+        populateEncodedBits(rootParent, new Bits(), byteBitsMap);
         byte tmp;
         Node node;
-        BitOutputStream bitOutputStream = new BitOutputStream(os);//todo
+        //todo write the rootParent tree
+        BitOutputStream bitOutputStream = new BitOutputStream(os);
         for(int i = 0; i < buffer.length; i++) {
             tmp = buffer[i];
-
-            bitOutputStream.write(node);
+            Bits bits = byteBitsMap.get(tmp);
+            bitOutputStream.write(bits);
         }
         bitOutputStream.flush();
     }
@@ -55,18 +58,25 @@ class Huffman {
     TODO
     for each child node, populate the bits by traversing to the root
      */
-    private static void populateEncodedBits(Node node, Map<Byte, Bits> map) {
+    private static void populateEncodedBits(Node node, Bits bits, Map<Byte, Bits> map) {
         if(node != null) {
             boolean hasChildren = false;
             if(node.leftChild != null) {
-                populateEncodedBits(node.leftChild, map);
+                bits.addHighestBit(true);
+                populateEncodedBits(node.leftChild, bits, map);
                 hasChildren = true;
+                bits.removeHighestBit();
             }
             if(node.rightChild != null) {
-                populateEncodedBits(node.rightChild, map);
+                bits.addHighestBit(false);
+                populateEncodedBits(node.rightChild, bits, map);
                 hasChildren = true;
+                bits.removeHighestBit();
             }
-            sdf
+            if(!hasChildren) {
+                //copy bits since it is modified in here
+                map.put(node.data, new Bits(bits));
+            }
         }
     }
 
@@ -140,7 +150,7 @@ class Huffman {
                 combinedNode.rightChild = smallestCntNode6;
                 smallestCntNode5.parent = combinedNode;
                 smallestCntNode6.parent = combinedNode;
-                combinedWeights.add(combinedNode);
+                combinedWeights.add(combinedWeights.size(), combinedNode);
             } else {
                 break;
             }
@@ -175,17 +185,55 @@ class Huffman {
     private static class Bits {
 
         private byte data;
-        private int bitCnt;
+        private byte bitCnt;
 
+        public Bits() {}
+
+        public Bits(Bits bits) {
+            if(bits != null) {
+                this.data = bits.data;
+                this.bitCnt = bits.bitCnt;
+            }
+        }
+
+        //todo unit test
+        void addHighestBit(boolean b) {
+            if(b) {
+                data |= 1 << (bitCnt++);
+            }
+        }
+
+        //todo unit test
+        void removeHighestBit() {
+            data &=;//todo decrement bitCnt
+        }
     }
 
-    private interface BitOutputStream {
+    //todo unit test
+    private static class BitOutputStream {
 
-        void write(byte bit);
+        private final OutputStream os;
+        private byte buffer;
+        private byte offset;
 
+        private BitOutputStream(OutputStream os) {
+            this.os = os;
+        }
+
+        private void write(Bits bits) {
+            if(bits.bitCnt > 0) {
+                //todo
+                os.write();
+            }
+        }
+
+        private void flush() {
+            //todo how to write end of stream if bits don't end on a byte boundary? maybe prefix-free encoding makes it not matter
+        }
     }
 
-    private interface BitInputStream {
+    //todo unit test
+    private static class BitInputStream {
 
         byte read();//todo how to handle EOF?
 
