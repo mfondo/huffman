@@ -1,4 +1,4 @@
-package main.java.com.mfondo.huffman;
+package com.mfondo.huffman;
 
 import java.io.FilterOutputStream;
 import java.io.OutputStream;

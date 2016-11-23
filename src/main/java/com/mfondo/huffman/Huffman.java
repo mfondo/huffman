@@ -1,9 +1,9 @@
 package com.mfondo.huffman;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,18 +28,31 @@ class Huffman {
     };
 
     public static void readHuffmanEncoded(InputStream is, OutputStream os) throws IOException {
-        int tmp;
-        byte data;
-        while((tmp = is.read()) >= 0) {
-            data = (byte)tmp;
-            //todo
+        Node rootNode = null;//todo read this from stream
+        BitInputStream bis = new BitInputStream(is);
+        boolean bit;
+        Node node = rootNode;
+        try {
+            bit = bis.readBit();
+            if(bit) {
+                node = node.leftChild;
+            } else {
+                node = node.rightChild;
+            }
+            if(node.rightChild == null || node.leftChild == null) {
+                //found a leaf node
+                os.write(node.data);
+                node = rootNode;
+            }
+        } catch (EOFException e) {
+            //end of file, ignore
         }
     }
 
     public static void writeHuffmanEncoded(InputStream is, OutputStream os, int chunkSize) throws IOException {
         //todo read chunkSize bytes into buffer (detect end of stream and adjust)
         byte[] buffer = new byte[chunkSize];
-        Node rootParent = buildTree(buffer, cnt);
+        Node rootParent = buildTree(buffer, -1);//todo cnt
         Map<Byte, Bits> byteBitsMap = new HashMap<>();
         populateEncodedBits(rootParent, new Bits(), byteBitsMap);
         byte tmp;
@@ -91,7 +104,7 @@ class Huffman {
         }
         //sort descending by count
         Collections.sort(initialWeights, NODE_CNT_COMPARATOR);
-        List<Node> combinedWeights = new ArrayList<>();//todo linked list would be more efficient for adds/removes?
+        List<Node> combinedWeights = new ArrayList<Node>();//todo linked list would be more efficient for adds/removes?
         Node smallestCntNode1;
         Node smallestCntNode2;
         Node smallestCntNode3;
@@ -159,7 +172,7 @@ class Huffman {
     }
 
     private static Map<Byte, Integer> getValueCounts(byte[] buffer, int cnt) {
-        Map<Byte, Integer> valueCnts = new HashMap<>();
+        Map<Byte, Integer> valueCnts = new HashMap<Byte, Integer>();
         byte data;
         for(int i = 0; i < cnt; i++) {
             data = buffer[i];
@@ -179,63 +192,6 @@ class Huffman {
         private Node rightChild;
         private byte data;
         private int cnt;
-
-    }
-
-    private static class Bits {
-
-        private byte data;
-        private byte bitCnt;
-
-        public Bits() {}
-
-        public Bits(Bits bits) {
-            if(bits != null) {
-                this.data = bits.data;
-                this.bitCnt = bits.bitCnt;
-            }
-        }
-
-        //todo unit test
-        void addHighestBit(boolean b) {
-            if(b) {
-                data |= 1 << (bitCnt++);
-            }
-        }
-
-        //todo unit test
-        void removeHighestBit() {
-            data &=;//todo decrement bitCnt
-        }
-    }
-
-    //todo unit test
-    private static class BitOutputStream {
-
-        private final OutputStream os;
-        private byte buffer;
-        private byte offset;
-
-        private BitOutputStream(OutputStream os) {
-            this.os = os;
-        }
-
-        private void write(Bits bits) {
-            if(bits.bitCnt > 0) {
-                //todo
-                os.write();
-            }
-        }
-
-        private void flush() {
-            //todo how to write end of stream if bits don't end on a byte boundary? maybe prefix-free encoding makes it not matter
-        }
-    }
-
-    //todo unit test
-    private static class BitInputStream {
-
-        byte read();//todo how to handle EOF?
 
     }
 }
