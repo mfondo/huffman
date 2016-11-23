@@ -3,33 +3,38 @@ package com.mfondo.huffman;
 /**
  * Created by mfriesen on 11/23/16.
  *
- * TODO javadoc and unit test
+ * Some bits
  */
-public class Bits {
+class Bits {
 
-    public byte data;
-    public byte bitCnt;
+    byte data;
+    byte bitCnt;
 
-    public Bits() {}
+    Bits() {}
 
-    public Bits(Bits bits) {
+    Bits(Bits bits) {
         if(bits != null) {
             this.data = bits.data;
             this.bitCnt = bits.bitCnt;
         }
     }
 
-    //todo unit test
     void addHighestBit(boolean b) {
+        if(bitCnt >= Byte.SIZE) {
+            throw new IllegalArgumentException("Too many bits");
+        }
         if(b) {
             data |= 1 << (bitCnt++);
+        } else {
+            data &= ~(1 << (bitCnt++));
         }
-        //todo precondition on bitCnt overflowing
     }
 
-    //todo unit test
     void removeHighestBit() {
-        //data &=;//todo decrement bitCnt
+        if(bitCnt <= 0) {
+            throw new IllegalArgumentException("Too few bits");
+        }
+        data &= ~(1 << (--bitCnt));
     }
 
     @Override
