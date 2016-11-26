@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -17,6 +18,27 @@ import static org.junit.Assert.assertEquals;
  * Unit tests for {@link BitOutputStream} and {@link BitInputStream}
  */
 public class BitInputOutputStreamTest {
+
+    @Test
+    public void testWrite() throws Exception {
+        Bits bits = new Bits();
+        bits.addHighestBit(true);
+        testWriteRead(new Bits[] {bits}, new byte[] {(byte)0b10000000});
+        bits.addHighestBit(true);
+        testWriteRead(new Bits[] {bits}, new byte[] {(byte)0b11000000});
+        testWriteRead(new Bits[] {
+                newBits(true, true, true, false, false, false),
+                newBits(true, true, true, true)},
+                new byte[] {(byte)0b11100011, (byte)0b11000000});
+    }
+
+    private Bits newBits(boolean... bits) {
+        Bits ret = new Bits();
+        for(boolean bit : bits) {
+            ret.addHighestBit(bit);
+        }
+        return ret;
+    }
 
     @Test
     public void testEmptyWriteRead() throws Exception {
@@ -66,6 +88,16 @@ public class BitInputOutputStreamTest {
         }
         bitsList.add(bits);
         testWriteRead(bitsList.toArray(new Bits[bitsList.size()]));
+    }
+
+    private void testWriteRead(Bits[] bits, byte[] expected) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        BitOutputStream bos = new BitOutputStream(baos);
+        for(Bits bit : bits) {
+            bos.write(bit);
+        }
+        bos.flush();
+        assertArrayEquals(expected, baos.toByteArray());
     }
 
     private void testWriteRead(Bits... bits) throws IOException {

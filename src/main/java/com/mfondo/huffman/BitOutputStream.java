@@ -22,20 +22,21 @@ class BitOutputStream {
         if(bits.bitCnt > 0) {
             int shift = offset - bits.bitCnt;
             if(shift < 0) {
-                if(true) {
-                    throw new UnsupportedOperationException();//todo
-                }
-                //todo shift only some into buffer
-                offset = Byte.SIZE;
+                //todo something wrong below
+                buffer |= bits.data << offset;
                 os.write(buffer);
-                //todo shift the rest into buffer
+                buffer = 0;
+                offset = (byte)(Byte.SIZE + shift);
+                buffer |= bits.data << offset;
             } else {
-                buffer |= bits.data << shift;
+                buffer |= bits.data << offset;
+                offset -= bits.bitCnt;
             }
         }
     }
 
     void flush() throws IOException {
+        //todo not quite right - this buffer will be in a weird state if this is written again
         if(offset < Byte.SIZE) {
             os.write(buffer);
         }
