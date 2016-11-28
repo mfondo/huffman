@@ -22,14 +22,14 @@ class BitOutputStream {
         if(bits.bitCnt > 0) {
             int shift = offset - bits.bitCnt;
             if(shift < 0) {
-                //todo something wrong below
-                buffer |= bits.data << offset;
+                buffer |= bits.data >> -shift;
                 os.write(buffer);
                 buffer = 0;
-                offset = (byte)(Byte.SIZE + shift);
+                int bitsRemaining = bits.bitCnt - offset;
+                offset = (byte)(Byte.SIZE - bitsRemaining);
                 buffer |= bits.data << offset;
             } else {
-                buffer |= bits.data << offset;
+                buffer |= bits.data << shift;
                 offset -= bits.bitCnt;
             }
         }

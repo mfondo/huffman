@@ -53,4 +53,10 @@ class Bits {
         result = 31 * result + (int) bitCnt;
         return result;
     }
+
+    @Override
+    public String toString() {
+        //todo use bitCnt in here to only show that many bits of data
+        return Integer.toBinaryString(data);
+    }
 }
