@@ -30,6 +30,14 @@ public class BitInputOutputStreamTest {
                 newBits(true, true, true, false, false, false),
                 newBits(true, true, true, true)},
                 new byte[] {(byte)0b11100011, (byte)0b11000000});
+        testWriteRead(new Bits[] {
+                        newBits(false),
+                        newBits(true, true, false, false, true, true, true),
+                        newBits(true, true),
+                        newBits(false, false, false),
+                        newBits(false, false),
+                        newBits(true, true, false, true)},
+                new byte[] {(byte)0b01100111, (byte)0b11000001, (byte)0b10100000});
     }
 
     private Bits newBits(boolean... bits) {
