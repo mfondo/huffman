@@ -34,8 +34,12 @@ public class BitInputOutputStreamTest {
 
     private Bits newBits(boolean... bits) {
         Bits ret = new Bits();
-        for(boolean bit : bits) {
-            ret.addHighestBit(bit);
+        /**
+         * Note that this adds the arguments so that the first element in bits
+         * is the most significant digit and the last is the least
+         */
+        for(int i = bits.length - 1; i >= 0; i--) {
+            ret.addHighestBit(bits[i]);
         }
         return ret;
     }
