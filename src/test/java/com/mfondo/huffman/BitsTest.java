@@ -45,4 +45,22 @@ public class BitsTest {
         assertEquals(0b00000001, bits.data);
         assertEquals(2, bits.bitCnt);
     }
+
+    @Test
+    public void testToString() {
+        Bits bits = new Bits();
+        assertEquals("", bits.toString());
+        bits.addHighestBit(true);
+        assertEquals("1", bits.toString());
+        bits.removeHighestBit();
+        bits.addHighestBit(false);
+        assertEquals("0", bits.toString());
+        bits.removeHighestBit();
+        bits.addHighestBit(true);
+        bits.addHighestBit(false);
+        bits.addHighestBit(true);
+        assertEquals("101", bits.toString());
+        bits.addHighestBit(false);
+        assertEquals("0101", bits.toString());
+    }
 }

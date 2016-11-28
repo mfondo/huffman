@@ -7,6 +7,8 @@ package com.mfondo.huffman;
  */
 class Bits {
 
+    private static final byte ALL_ONES_BYTE = -1;
+
     byte data;
     byte bitCnt;
 
@@ -56,7 +58,11 @@ class Bits {
 
     @Override
     public String toString() {
-        //todo use bitCnt in here to only show that many bits of data
-        return Integer.toBinaryString(data);
+        char[] ret = new char[bitCnt];
+        int index = 0;
+        for(int i = bitCnt - 1; i >= 0; i--) {
+            ret[index++] = ((1 << i) & data) != 0 ? '1' : '0';
+        }
+        return new String(ret);
     }
 }
