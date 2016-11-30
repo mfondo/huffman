@@ -7,8 +7,6 @@ package com.mfondo.huffman;
  */
 class Bits {
 
-    private static final byte ALL_ONES_BYTE = -1;
-
     byte data;
     byte bitCnt;
 

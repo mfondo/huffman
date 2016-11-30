@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -38,6 +39,25 @@ public class BitInputOutputStreamTest {
                         newBits(false, false),
                         newBits(true, true, false, true)},
                 new byte[] {(byte)0b01100111, (byte)0b11000001, (byte)0b10100000});
+    }
+
+    @Test
+    public void testRead() throws Exception {
+        testRead(Arrays.asList(true, false, true, false, true, true, true, false), (byte)0b10101110);
+        testRead(Arrays.asList(true, false, true, false, true, true, true, false, false, false, false, false, true, true, true, true), (byte)0b10101110, (byte)0b00001111);
+    }
+
+    private void testRead(List<Boolean> expectedBits, byte... bytes) throws Exception {
+        BitInputStream bis = new BitInputStream(new ByteArrayInputStream(bytes));
+        List<Boolean> actualBits = new ArrayList<>();
+        try {
+            while(true) {
+                actualBits.add(bis.readBit());
+            }
+        } catch (EOFException e) {
+            //ignore
+        }
+        assertEquals(expectedBits, actualBits);
     }
 
     private Bits newBits(boolean... bits) {
