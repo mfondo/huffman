@@ -135,23 +135,15 @@ public class BitInputOutputStreamTest {
     private void testWriteRead(Bits... bits) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         BitOutputStream bos = new BitOutputStream(baos);
-        int totalInputBits = 0;
         for(Bits bit : bits) {
             bos.write(bit);
-            totalInputBits += bit.bitCnt;
         }
         bos.flush();
         BitInputStream bis = new BitInputStream(new ByteArrayInputStream(baos.toByteArray()));
-        List<Boolean> readBits = new ArrayList<>();
-        try {
-            readBits.add(bis.readBit());
-        } catch (EOFException e) {
-            //end of file
-        }
-        assertEquals(totalInputBits, readBits.size());
-        Bits currentBits = bits[0];//todo advance this based on bits.cnt
-        for(int i = 0; i < totalInputBits; i++) {
-            //todo assertEquals(readBits.get(i));//todo
+        for(Bits bit : bits) {
+            for(int i = bit.bitCnt - 1; i >= 0; i--) {
+                assertEquals(bit.getBit(i), bis.readBit());
+            }
         }
     }
 }

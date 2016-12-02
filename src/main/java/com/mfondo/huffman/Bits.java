@@ -37,6 +37,13 @@ class Bits {
         data &= ~(1 << (--bitCnt));
     }
 
+    boolean getBit(int index) {
+        if(index < 0 || index >= bitCnt) {
+            throw new IllegalArgumentException("Invalid offset " + index + " size " + bitCnt);
+        }
+        return ((1 << index) & data) != 0;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
