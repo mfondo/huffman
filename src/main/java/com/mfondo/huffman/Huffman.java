@@ -23,7 +23,10 @@ class Huffman {
     private static final Comparator<Node> NODE_CNT_COMPARATOR = new Comparator<Node>() {
         @Override
         public int compare(Node o1, Node o2) {
-            return Integer.compare(o1.cnt, o2.cnt);
+            //sort null last
+            int i1 = o1 != null ? o1.cnt : Integer.MAX_VALUE;
+            int i2 = o2 != null ? o2.cnt : Integer.MAX_VALUE;
+            return Integer.compare(i1, i2);
         }
     };
 
@@ -54,6 +57,7 @@ class Huffman {
         byte[] buffer = new byte[chunkSize];
         Node rootParent = buildTree(buffer, -1);//todo cnt
         Map<Byte, Bits> byteBitsMap = new HashMap<>();
+        //todo writing the number of symbols to be encoded first will help with trailing bits on the bitstream
         populateEncodedBits(rootParent, new Bits(), byteBitsMap);
         byte tmp;
         Node node;
@@ -93,7 +97,8 @@ class Huffman {
         }
     }
 
-    private static Node buildTree(byte[] buffer, int cnt) {
+    //default access for unit tests
+    static Node buildTree(byte[] buffer, int cnt) {
         Map<Byte, Integer> valueCnts = getValueCounts(buffer, cnt);
         List<Node> initialWeights = new ArrayList<>(valueCnts.size());//todo linked list would be more efficient for adds/removes?
         for(Map.Entry<Byte, Integer> entry : valueCnts.entrySet()) {
@@ -102,7 +107,7 @@ class Huffman {
             node.cnt = entry.getValue();
             initialWeights.add(node);
         }
-        //sort descending by count
+        //sort ascending by count
         Collections.sort(initialWeights, NODE_CNT_COMPARATOR);
         List<Node> combinedWeights = new ArrayList<Node>();//todo linked list would be more efficient for adds/removes?
         Node smallestCntNode1;
@@ -121,7 +126,7 @@ class Huffman {
             for(int i = 0; i < smallestNodes.length; i++) {
                 smallestNodes[i] = null;
             }
-            if(initialWeights.size() > 1 && combinedWeights.size() > 1) {
+            if(initialWeights.size() > 0 || combinedWeights.size() > 0) {
                 if(!initialWeights.isEmpty()) {
                     smallestCntNode1 = initialWeights.get(0);
                     smallestNodes[0] = smallestCntNode1;
@@ -138,6 +143,7 @@ class Huffman {
                         smallestNodes[3] = smallestCntNode4;
                     }
                 }
+                //this sort purposefully puts nulls last
                 Arrays.sort(smallestNodes, NODE_CNT_COMPARATOR);
                 tmpNode = smallestNodes[0];
                 if(tmpNode == smallestCntNode1) {
@@ -150,7 +156,7 @@ class Huffman {
                 if(tmpNode == smallestCntNode1) {
                     initialWeights.remove(0);
                 } else if(tmpNode == smallestCntNode2) {
-                    combinedWeights.remove(0);
+                    initialWeights.remove(0);
                 } else if(tmpNode == smallestCntNode3) {
                     combinedWeights.remove(0);
                 } else if(tmpNode == smallestCntNode4) {
@@ -168,7 +174,7 @@ class Huffman {
                 break;
             }
         }
-        return initialWeights.isEmpty() ? initialWeights.get(0) : combinedWeights.get(0);
+        return initialWeights.isEmpty() ? combinedWeights.get(0) : initialWeights.get(0);
     }
 
     private static Map<Byte, Integer> getValueCounts(byte[] buffer, int cnt) {
@@ -185,13 +191,48 @@ class Huffman {
         return valueCnts;
     }
 
-    private static class Node {
+    //default access for unit tests
+    static class Node {
 
-        private Node parent;
-        private Node leftChild;
-        private Node rightChild;
-        private byte data;
-        private int cnt;
+        Node parent;
+        Node leftChild;
+        Node rightChild;
+        byte data;
+        int cnt;
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Node node = (Node) o;
+            if (data != node.data) return false;
+            if (cnt != node.cnt) return false;
+            if (parent != null ? !parent.equals(node.parent) : node.parent != null) return false;
+            if (leftChild != null ? !leftChild.equals(node.leftChild) : node.leftChild != null) return false;
+            return rightChild != null ? rightChild.equals(node.rightChild) : node.rightChild == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = parent != null ? parent.hashCode() : 0;
+            result = 31 * result + (leftChild != null ? leftChild.hashCode() : 0);
+            result = 31 * result + (rightChild != null ? rightChild.hashCode() : 0);
+            result = 31 * result + (int) data;
+            result = 31 * result + cnt;
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            //todo this throws StackOverflow errors because of recursive toStrings() on Nodes refs
+            final StringBuilder sb = new StringBuilder("Node{");
+            sb.append("parent=").append(parent);
+            sb.append(", leftChild=").append(leftChild);
+            sb.append(", rightChild=").append(rightChild);
+            sb.append(", data=").append(data);
+            sb.append(", cnt=").append(cnt);
+            sb.append('}');
+            return sb.toString();
+        }
     }
 }
