@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 
 /**
  * Created by mfriesen on 11/18/16.
@@ -23,10 +24,7 @@ class Huffman {
     private static final Comparator<Node> NODE_CNT_COMPARATOR = new Comparator<Node>() {
         @Override
         public int compare(Node o1, Node o2) {
-            //sort null last
-            int i1 = o1 != null ? o1.cnt : Integer.MAX_VALUE;
-            int i2 = o2 != null ? o2.cnt : Integer.MAX_VALUE;
-            return Integer.compare(i1, i2);
+            return Integer.compare(o1.cnt, o2.cnt);
         }
     };
 
@@ -100,81 +98,33 @@ class Huffman {
     //default access for unit tests
     static Node buildTree(byte[] buffer, int cnt) {
         Map<Byte, Integer> valueCnts = getValueCounts(buffer, cnt);
-        List<Node> initialWeights = new ArrayList<>(valueCnts.size());//todo linked list would be more efficient for adds/removes?
+        PriorityQueue<Node> queue = new PriorityQueue<>(cnt, NODE_CNT_COMPARATOR);
         for(Map.Entry<Byte, Integer> entry : valueCnts.entrySet()) {
             Node node = new Node();
             node.data = entry.getKey();
             node.cnt = entry.getValue();
-            initialWeights.add(node);
+            queue.add(node);
         }
-        //sort ascending by count
-        Collections.sort(initialWeights, NODE_CNT_COMPARATOR);
-        List<Node> combinedWeights = new ArrayList<Node>();//todo linked list would be more efficient for adds/removes?
-        Node smallestCntNode1;
-        Node smallestCntNode2;
-        Node smallestCntNode3;
-        Node smallestCntNode4;
-        Node smallestCntNode5;
-        Node smallestCntNode6;
-        Node tmpNode;
-        Node[] smallestNodes = new Node[4];
+        int queueSize;
+        Node node1;
+        Node node2;
+        Node combinedNode;
         while(true) {
-            smallestCntNode1 = null;
-            smallestCntNode2 = null;
-            smallestCntNode3 = null;
-            smallestCntNode4 = null;
-            for(int i = 0; i < smallestNodes.length; i++) {
-                smallestNodes[i] = null;
-            }
-            if(initialWeights.size() > 0 || combinedWeights.size() > 0) {
-                if(!initialWeights.isEmpty()) {
-                    smallestCntNode1 = initialWeights.get(0);
-                    smallestNodes[0] = smallestCntNode1;
-                    if(initialWeights.size() > 1) {
-                        smallestCntNode2 = initialWeights.get(1);
-                        smallestNodes[1] = smallestCntNode2;
-                    }
-                }
-                if(!combinedWeights.isEmpty()) {
-                    smallestCntNode3 = combinedWeights.get(0);
-                    smallestNodes[2] = smallestCntNode3;
-                    if(combinedWeights.size() > 1) {
-                        smallestCntNode4 = combinedWeights.get(1);
-                        smallestNodes[3] = smallestCntNode4;
-                    }
-                }
-                //this sort purposefully puts nulls last
-                Arrays.sort(smallestNodes, NODE_CNT_COMPARATOR);
-                tmpNode = smallestNodes[0];
-                if(tmpNode == smallestCntNode1) {
-                    initialWeights.remove(0);
-                } else if(tmpNode == smallestCntNode3) {
-                    combinedWeights.remove(0);
-                }
-                smallestCntNode5 = tmpNode;
-                tmpNode = smallestNodes[1];
-                if(tmpNode == smallestCntNode1) {
-                    initialWeights.remove(0);
-                } else if(tmpNode == smallestCntNode2) {
-                    initialWeights.remove(0);
-                } else if(tmpNode == smallestCntNode3) {
-                    combinedWeights.remove(0);
-                } else if(tmpNode == smallestCntNode4) {
-                    combinedWeights.remove(0);
-                }
-                smallestCntNode6 = tmpNode;
-                Node combinedNode = new Node();
-                combinedNode.cnt = smallestCntNode5.cnt + smallestCntNode6.cnt;
-                combinedNode.leftChild = smallestCntNode5;
-                combinedNode.rightChild = smallestCntNode6;
-                smallestCntNode5.parent = combinedNode;
-                smallestCntNode6.parent = combinedNode;
-                combinedWeights.add(combinedWeights.size(), combinedNode);
+            queueSize = queue.size();
+            if(queueSize > 1) {
+                node1 = queue.poll();
+                node2 = queue.poll();
+                combinedNode = new Node();
+                combinedNode.cnt = node1.cnt + node2.cnt;
+                combinedNode.leftChild = node1;
+                combinedNode.rightChild = node2;
+                node1.parent = combinedNode;
+                node2.parent = combinedNode;
+                queue.add(combinedNode);
             } else {
-                break;
+                return queue.iterator().next();
             }
         }
-        return initialWeights.isEmpty() ? combinedWeights.get(0) : initialWeights.get(0);
     }
 
     private static Map<Byte, Integer> getValueCounts(byte[] buffer, int cnt) {
