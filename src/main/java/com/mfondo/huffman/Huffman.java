@@ -56,6 +56,7 @@ class Huffman {
         Node rootParent = buildTree(buffer, -1);//todo cnt
         Map<Byte, Bits> byteBitsMap = new HashMap<>();
         //todo writing the number of symbols to be encoded first will help with trailing bits on the bitstream
+        //todo "canonical huffman code would be more efficient to serialize: https://en.wikipedia.org/wiki/Canonical_Huffman_code the tree
         populateEncodedBits(rootParent, new Bits(), byteBitsMap);
         byte tmp;
         Node node;
@@ -73,7 +74,7 @@ class Huffman {
     TODO
     for each child node, populate the bits by traversing to the root
      */
-    private static void populateEncodedBits(Node node, Bits bits, Map<Byte, Bits> map) {
+    static void populateEncodedBits(Node node, Bits bits, Map<Byte, Bits> map) {
         if(node != null) {
             boolean hasChildren = false;
             if(node.leftChild != null) {

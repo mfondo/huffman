@@ -63,4 +63,18 @@ public class BitsTest {
         bits.addHighestBit(false);
         assertEquals("0101", bits.toString());
     }
+
+    @Test
+    public void testToFromString() {
+        assertToFromString(new Bits());
+        assertToFromString(new Bits("1"));
+        assertToFromString(new Bits("10"));
+        assertToFromString(new Bits("1010"));
+        assertToFromString(new Bits("11111"));
+    }
+
+    private void assertToFromString(Bits bits) {
+        Bits actual = new Bits(bits.toString());
+        assertEquals(bits, actual);
+    }
 }
