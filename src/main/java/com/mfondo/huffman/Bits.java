@@ -19,19 +19,17 @@ class Bits {
         }
     }
 
-    //todo unit test this with toString()
     Bits(String bitStr) {
         if(bitStr != null) {
             char c;
-            int j = 0;
             for (int i = bitStr.length() - 1; i >= 0; i--) {
                 c = bitStr.charAt(i);
                 if('1' == c) {
-                    data |= 1 << j;
+                    data |= 1 << bitCnt;
                 } else if('0' != c) {
                     throw new IllegalArgumentException("Invalid bit string " + bitStr);
                 }
-                j++;
+                bitCnt++;
             }
         }
     }
