@@ -56,15 +56,12 @@ class Huffman {
         byte[] buffer = new byte[chunkSize];
         Node rootParent = buildTree(buffer, -1);//todo cnt
         Map<Byte, Bits> byteBitsMap = new HashMap<>();
-        //todo writing the number of symbols to be encoded first will help with trailing bits on the bitstream
-        //todo "canonical huffman code would be more efficient to serialize: https://en.wikipedia.org/wiki/Canonical_Huffman_code the tree
         populateEncodedBits(rootParent, new Bits(), byteBitsMap);
-        byte tmp;
-        //todo write the rootParent tree
         BitOutputStream bitOutputStream = new BitOutputStream(os);
-        for(int i = 0; i < buffer.length; i++) {
-            tmp = buffer[i];
-            Bits bits = byteBitsMap.get(tmp);
+        writeByteBitsMap(byteBitsMap, bitOutputStream);
+        //todo writing the number of symbols to be encoded first will help with trailing bits on the bitstream
+        for (byte data : buffer) {
+            Bits bits = byteBitsMap.get(data);
             bitOutputStream.write(bits);
         }
         bitOutputStream.flush();
@@ -72,6 +69,11 @@ class Huffman {
 
     //todo unit test
     static void writeByteBitsMap(Map<Byte, Bits> byteBitsMap, BitOutputStream bos) throws IOException {
+        /**
+         * todo
+         * "canonical huffman code" would be more efficient to serialize
+         * see https://en.wikipedia.org/wiki/Canonical_Huffman_code
+         */
         Bits tmp = new Bits();
         tmp.setData((byte)byteBitsMap.size());//todo any overflow/underflow issues here?
         bos.write(tmp);
