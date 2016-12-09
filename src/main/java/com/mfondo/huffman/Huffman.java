@@ -1,5 +1,6 @@
 package com.mfondo.huffman;
 
+import java.io.DataOutput;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,7 +60,6 @@ class Huffman {
         //todo "canonical huffman code would be more efficient to serialize: https://en.wikipedia.org/wiki/Canonical_Huffman_code the tree
         populateEncodedBits(rootParent, new Bits(), byteBitsMap);
         byte tmp;
-        Node node;
         //todo write the rootParent tree
         BitOutputStream bitOutputStream = new BitOutputStream(os);
         for(int i = 0; i < buffer.length; i++) {
@@ -70,8 +70,40 @@ class Huffman {
         bitOutputStream.flush();
     }
 
+    //todo unit test
+    static void writeByteBitsMap(Map<Byte, Bits> byteBitsMap, BitOutputStream bos) throws IOException {
+        Bits tmp = new Bits();
+        tmp.setData((byte)byteBitsMap.size());//todo any overflow/underflow issues here?
+        bos.write(tmp);
+        Bits symbol;
+        for(Map.Entry<Byte, Bits> entry : byteBitsMap.entrySet()) {
+            tmp.setData(entry.getKey());
+            bos.write(tmp);
+            symbol = entry.getValue();
+            tmp.setData(symbol.bitCnt);
+            bos.write(tmp);
+            bos.write(symbol);
+        }
+    }
+
+    //todo unit test
+    static Map<Byte, Bits> readByteBitsMap(BitInputStream bis) throws IOException {
+        final Bits tmp = new Bits();
+        bis.readBits(tmp, Byte.SIZE);
+        final int size = tmp.data;
+        byte data;
+        Map<Byte, Bits> ret = new HashMap<>(size);
+        for(int i = 0; i < size; i++) {
+            bis.readBits(tmp, Byte.SIZE);
+            data = tmp.data;
+            bis.readBits(tmp, Byte.SIZE);
+            bis.readBits(tmp, tmp.data);
+            ret.put(data, new Bits(tmp));
+        }
+        return ret;
+    }
+
     /*
-    TODO
     for each child node, populate the bits by traversing to the root
      */
     static void populateEncodedBits(Node node, Bits bits, Map<Byte, Bits> map) {

@@ -34,6 +34,11 @@ class Bits {
         }
     }
 
+    Bits(byte data) {
+        this.data = data;
+        bitCnt = Byte.SIZE;
+    }
+
     void addHighestBit(boolean b) {
         if(bitCnt >= Byte.SIZE) {
             throw new IllegalArgumentException("Too many bits");
@@ -70,6 +75,11 @@ class Bits {
             j--;
         }
         data = tmp;
+    }
+
+    void setData(byte data) {
+        this.data = data;
+        this.bitCnt = Byte.SIZE;
     }
 
     @Override

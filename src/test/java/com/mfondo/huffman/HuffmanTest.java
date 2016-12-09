@@ -2,6 +2,9 @@ package com.mfondo.huffman;
 
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,15 +19,40 @@ public class HuffmanTest {
 
     @Test
     public void testBuildTree() {
-        byte[] bytes = new byte[] {1, 2, 2, 3};
-        Huffman.Node actualRoot = Huffman.buildTree(bytes, bytes.length);
-        assertSymbols(actualRoot, 1, new Bits("01"), 2, new Bits("1"), 3, new Bits("00"));
+        assertSymbols(new byte[] {1, 2}, 1, new Bits("1"), 2, new Bits("0"));
+        assertSymbols(new byte[] {1, 2, 2, 3}, 1, new Bits("01"), 2, new Bits("1"), 3, new Bits("00"));
+        assertSymbols(new byte[] {1, 2, 3, 3, 3, 3, 4, 4}, 1, new Bits("001"), 2, new Bits("000"), 3, new Bits("1"), 4, new Bits("01"));
         //todo todo test all the boundary conditions, including empty
     }
 
+    private void assertSymbols(byte[] bytes, Object... expectedSymbols) {
+        Huffman.Node actualRoot = Huffman.buildTree(bytes, bytes.length);
+        assertSymbols(actualRoot, expectedSymbols);
+    }
+
     @Test
-    public void testSerializeTree() {
-        //todo
+    public void testReadWriteByteBitsMap() throws IOException {
+        Map<Byte, Bits> byteBitsMap = new HashMap<>();
+        assertReadWriteByteBitsMap(byteBitsMap);
+
+        byteBitsMap.put((byte)1, new Bits("1"));
+        assertReadWriteByteBitsMap(byteBitsMap);
+
+        byteBitsMap.put((byte)2, new Bits("0010"));
+        assertReadWriteByteBitsMap(byteBitsMap);
+
+        byteBitsMap.put((byte)5, new Bits("010"));
+        assertReadWriteByteBitsMap(byteBitsMap);
+    }
+
+    private void assertReadWriteByteBitsMap(Map<Byte, Bits> expected) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        BitOutputStream bos = new BitOutputStream(baos);
+        Huffman.writeByteBitsMap(expected, bos);
+        bos.flush();
+        BitInputStream bis = new BitInputStream(new ByteArrayInputStream(baos.toByteArray()));
+        Map<Byte, Bits> actual = Huffman.readByteBitsMap(bis);
+        assertEquals(expected, actual);
     }
 
     private void assertSymbols(Huffman.Node root, Object... expectedSymbols) {
