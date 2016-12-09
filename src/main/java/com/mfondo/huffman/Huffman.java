@@ -67,7 +67,6 @@ class Huffman {
         bitOutputStream.flush();
     }
 
-    //todo unit test
     static void writeByteBitsMap(Map<Byte, Bits> byteBitsMap, BitOutputStream bos) throws IOException {
         /**
          * todo
@@ -88,17 +87,16 @@ class Huffman {
         }
     }
 
-    //todo unit test
     static Map<Byte, Bits> readByteBitsMap(BitInputStream bis) throws IOException {
         final Bits tmp = new Bits();
-        bis.readBits(tmp, Byte.SIZE);
+        bis.readBits(tmp, (byte)Byte.SIZE);
         final int size = tmp.data;
         byte data;
         Map<Byte, Bits> ret = new HashMap<>(size);
         for(int i = 0; i < size; i++) {
-            bis.readBits(tmp, Byte.SIZE);
+            bis.readBits(tmp, (byte)Byte.SIZE);
             data = tmp.data;
-            bis.readBits(tmp, Byte.SIZE);
+            bis.readBits(tmp, (byte)Byte.SIZE);
             bis.readBits(tmp, tmp.data);
             ret.put(data, new Bits(tmp));
         }
