@@ -30,38 +30,64 @@ class Huffman {
     };
 
     public static void readHuffmanEncoded(InputStream is, OutputStream os) throws IOException {
-        Node rootNode = null;//todo read this from stream
         BitInputStream bis = new BitInputStream(is);
-        boolean bit;
-        Node node = rootNode;
-        try {
-            bit = bis.readBit();
-            if(bit) {
-                node = node.leftChild;
-            } else {
-                node = node.rightChild;
-            }
-            if(node.rightChild == null || node.leftChild == null) {
-                //found a leaf node
-                os.write(node.data);
-                node = rootNode;
-            }
-        } catch (EOFException e) {
-            //end of file, ignore
+        Map<Byte, Bits> byteBitsMap = readByteBitsMap(bis);
+        Node rootNode;//todo build tree from byteBitsMap
+        Bits bits = new Bits();
+        bis.readBits(bits, (byte)Byte.SIZE);
+        int cnt = bits.data;
+        for(int i = 0; i < cnt; i++) {
+            readByte(rootNode, bis, os);
         }
     }
 
-    public static void writeHuffmanEncoded(InputStream is, OutputStream os, int chunkSize) throws IOException {
-        //todo read chunkSize bytes into buffer (detect end of stream and adjust)
-        byte[] buffer = new byte[chunkSize];
-        Node rootParent = buildTree(buffer, -1);//todo cnt
+    private static void readByte(Node rootNode, BitInputStream bis, OutputStream os) throws IOException {
+        boolean bit;
+        Node node = rootNode;
+        try {
+            while(true) {
+                bit = bis.readBit();
+                if (bit) {
+                    node = node.leftChild;
+                } else {
+                    node = node.rightChild;
+                }
+                if (node.rightChild == null || node.leftChild == null) {
+                    //found a leaf node
+                    os.write(node.data);
+                    node = rootNode;//todo?
+                }
+            }
+        } catch (EOFException e) {
+            //end of file, ignore todo this right?
+        }
+    }
+
+    public static void writeHuffmanEncoded(InputStream is, OutputStream os, int bufferSize) throws IOException {
+        byte[] buffer = new byte[bufferSize];
+        int offset = 0;
+        int cnt;
+        while((cnt = is.read(buffer, offset, buffer.length - offset)) >= 0) {
+            offset += cnt;
+            if(offset >= buffer.length) {
+                writeHuffmanEncoded(buffer, cnt, os);
+                offset = 0;
+            }
+        }
+        //todo writeHuffmanEncoded on what is left in buffer
+    }
+
+    private static void writeHuffmanEncoded(byte[] buffer, int length, OutputStream os) throws IOException {
+        Node rootParent = buildTree(buffer, length);
         Map<Byte, Bits> byteBitsMap = new HashMap<>();
         populateEncodedBits(rootParent, new Bits(), byteBitsMap);
         BitOutputStream bitOutputStream = new BitOutputStream(os);
         writeByteBitsMap(byteBitsMap, bitOutputStream);
-        //todo writing the number of symbols to be encoded first will help with trailing bits on the bitstream
+        Bits bits = new Bits();
+        bits.setData((byte)length);
+        bitOutputStream.write(bits);
         for (byte data : buffer) {
-            Bits bits = byteBitsMap.get(data);
+            bits = byteBitsMap.get(data);
             bitOutputStream.write(bits);
         }
         bitOutputStream.flush();
