@@ -59,6 +59,19 @@ class Bits {
         return ((1 << index) & data) != 0;
     }
 
+    void reverse() {
+        //a lookup table would probably be faster here
+        byte tmp = 0;
+        int j = bitCnt - 1;
+        for(int i = 0; i < bitCnt; i++) {
+            if(getBit(i)) {
+                tmp |= 1 << j;
+            }
+            j--;
+        }
+        data = tmp;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

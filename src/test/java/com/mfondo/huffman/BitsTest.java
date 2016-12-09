@@ -77,4 +77,23 @@ public class BitsTest {
         Bits actual = new Bits(bits.toString());
         assertEquals(bits, actual);
     }
+
+    @Test
+    public void testReverse() {
+        Bits bits = new Bits();
+        bits.reverse();
+        assertEquals(new Bits(), bits);
+
+        bits = new Bits("1");
+        bits.reverse();
+        assertEquals(new Bits("1"), bits);
+
+        bits = new Bits("10");
+        bits.reverse();
+        assertEquals(new Bits("01"), bits);
+
+        bits = new Bits("1011");
+        bits.reverse();
+        assertEquals(new Bits("1101"), bits);
+    }
 }

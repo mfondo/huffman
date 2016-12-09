@@ -91,7 +91,9 @@ class Huffman {
             }
             if(!hasChildren) {
                 //copy bits since it is modified in here
-                map.put(node.data, new Bits(bits));
+                Bits copy = new Bits(bits);
+                copy.reverse();
+                map.put(node.data, copy);
             }
         }
     }
