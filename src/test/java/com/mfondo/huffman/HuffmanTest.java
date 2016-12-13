@@ -45,6 +45,30 @@ public class HuffmanTest {
         assertReadWriteByteBitsMap(byteBitsMap);
     }
 
+    @Test
+    public void testBuildTreeFromMap() throws Exception {
+        Huffman.Node rootNode = new Huffman.Node();
+        Map<Byte, Bits> map = new HashMap<>();
+        map.put((byte)1, new Bits("0"));
+        map.put((byte)2, new Bits("1"));
+        map.put((byte)3, new Bits("10"));
+        Huffman.buildTreeFromMap(rootNode, map);
+        assertReadEncodedByte(rootNode, (byte)1, new Bits("0"));
+        assertReadEncodedByte(rootNode, (byte)2, new Bits("1"));
+        assertReadEncodedByte(rootNode, (byte)3, new Bits("10"));
+    }
+
+    private void assertReadEncodedByte(Huffman.Node rootNode, byte expectedData, Bits bits) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        BitOutputStream bos = new BitOutputStream(baos);
+        bos.write(bits);
+        bos.flush();
+        BitInputStream bis = new BitInputStream(new ByteArrayInputStream(baos.toByteArray()));
+        ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+        Huffman.readByte(rootNode, bis, baos2);
+        assertEquals(expectedData, baos2.toByteArray()[0]);
+    }
+
     private void assertReadWriteByteBitsMap(Map<Byte, Bits> expected) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         BitOutputStream bos = new BitOutputStream(baos);

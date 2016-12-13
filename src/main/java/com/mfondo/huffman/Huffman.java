@@ -32,7 +32,8 @@ class Huffman {
     public static void readHuffmanEncoded(InputStream is, OutputStream os) throws IOException {
         BitInputStream bis = new BitInputStream(is);
         Map<Byte, Bits> byteBitsMap = readByteBitsMap(bis);
-        Node rootNode;//todo build tree from byteBitsMap
+        Node rootNode = new Node();
+        buildTreeFromMap(rootNode, byteBitsMap);
         Bits bits = new Bits();
         bis.readBits(bits, (byte)Byte.SIZE);
         int cnt = bits.data;
@@ -41,7 +42,7 @@ class Huffman {
         }
     }
 
-    private static void readByte(Node rootNode, BitInputStream bis, OutputStream os) throws IOException {
+    static void readByte(Node rootNode, BitInputStream bis, OutputStream os) throws IOException {
         boolean bit;
         Node node = rootNode;
         try {
@@ -52,7 +53,7 @@ class Huffman {
                 } else {
                     node = node.rightChild;
                 }
-                if (node.rightChild == null || node.leftChild == null) {
+                if (node.rightChild == null || node.leftChild == null) {//todo not right
                     //found a leaf node
                     os.write(node.data);
                     node = rootNode;//todo?
@@ -152,6 +153,44 @@ class Huffman {
                 Bits copy = new Bits(bits);
                 copy.reverse();
                 map.put(node.data, copy);
+            }
+        }
+    }
+
+    static void buildTreeFromMap(Node rootNode, Map<Byte, Bits> map) {
+        for(Map.Entry<Byte, Bits> entry : map.entrySet()) {
+            Byte data = entry.getKey();
+            Bits bits = entry.getValue();
+            buildTree(rootNode, data, bits);
+        }
+    }
+
+    private static void buildTree(Node node, Byte data, Bits bits) {
+        boolean tmp;
+        for(int i = bits.bitCnt - 1; i >= 0; i--) {
+            tmp = bits.getBit(i);
+            Node childNode = null;
+            if(tmp) {
+                if(node.leftChild == null) {
+                    childNode = new Node();
+                    childNode.parent = node;
+                    node.leftChild = childNode;
+                } else {
+                    childNode = node.leftChild;
+                }
+            } else {
+                if(node.rightChild == null) {
+                    childNode = new Node();
+                    childNode.parent = node;
+                    node.rightChild = childNode;
+                } else {
+                    childNode = node.rightChild;
+                }
+            }
+            if(i == 0) {
+                childNode.data = data;
+            } else {
+                node = childNode;
             }
         }
     }
