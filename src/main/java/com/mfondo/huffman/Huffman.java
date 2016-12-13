@@ -32,6 +32,7 @@ class Huffman {
         Bits bits = new Bits();
         bis.readBits(bits, (byte)Byte.SIZE);
         int cnt = bits.data;
+        //todo this only reads one chunk
         for(int i = 0; i < cnt; i++) {
             readByte(rootNode, bis, os);
         }
@@ -86,7 +87,7 @@ class Huffman {
             bits = byteBitsMap.get(data);
             bitOutputStream.write(bits);
         }
-        bitOutputStream.flush();
+        bitOutputStream.flush();//todo this will not work if this method called on multiple chunks
     }
 
     static void writeByteBitsMap(Map<Byte, Bits> byteBitsMap, BitOutputStream bos) throws IOException {
