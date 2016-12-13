@@ -50,12 +50,12 @@ public class HuffmanTest {
         Huffman.Node rootNode = new Huffman.Node();
         Map<Byte, Bits> map = new HashMap<>();
         map.put((byte)1, new Bits("0"));
-        map.put((byte)2, new Bits("1"));
-        map.put((byte)3, new Bits("10"));
+        map.put((byte)2, new Bits("10"));
+        map.put((byte)3, new Bits("110"));
         Huffman.buildTreeFromMap(rootNode, map);
         assertReadEncodedByte(rootNode, (byte)1, new Bits("0"));
-        assertReadEncodedByte(rootNode, (byte)2, new Bits("1"));
-        assertReadEncodedByte(rootNode, (byte)3, new Bits("10"));
+        assertReadEncodedByte(rootNode, (byte)2, new Bits("10"));
+        assertReadEncodedByte(rootNode, (byte)3, new Bits("110"));
     }
 
     private void assertReadEncodedByte(Huffman.Node rootNode, byte expectedData, Bits bits) throws IOException {

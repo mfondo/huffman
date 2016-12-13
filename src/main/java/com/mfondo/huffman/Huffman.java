@@ -1,16 +1,11 @@
 package com.mfondo.huffman;
 
-import java.io.DataOutput;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 
@@ -53,7 +48,7 @@ class Huffman {
                 } else {
                     node = node.rightChild;
                 }
-                if (node.rightChild == null || node.leftChild == null) {//todo not right
+                if (node.data != null) {
                     //found a leaf node
                     os.write(node.data);
                     node = rootNode;//todo?
@@ -247,7 +242,7 @@ class Huffman {
         Node parent;
         Node leftChild;
         Node rightChild;
-        byte data;
+        Byte data;
         int cnt;
 
         @Override
@@ -255,11 +250,11 @@ class Huffman {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Node node = (Node) o;
-            if (data != node.data) return false;
             if (cnt != node.cnt) return false;
             if (parent != null ? !parent.equals(node.parent) : node.parent != null) return false;
             if (leftChild != null ? !leftChild.equals(node.leftChild) : node.leftChild != null) return false;
-            return rightChild != null ? rightChild.equals(node.rightChild) : node.rightChild == null;
+            if (rightChild != null ? !rightChild.equals(node.rightChild) : node.rightChild != null) return false;
+            return data != null ? data.equals(node.data) : node.data == null;
         }
 
         @Override
@@ -267,14 +262,13 @@ class Huffman {
             int result = parent != null ? parent.hashCode() : 0;
             result = 31 * result + (leftChild != null ? leftChild.hashCode() : 0);
             result = 31 * result + (rightChild != null ? rightChild.hashCode() : 0);
-            result = 31 * result + (int) data;
+            result = 31 * result + (data != null ? data.hashCode() : 0);
             result = 31 * result + cnt;
             return result;
         }
 
         @Override
         public String toString() {
-            //todo this throws StackOverflow errors because of recursive toStrings() on Nodes refs
             final StringBuilder sb = new StringBuilder("Node{");
             sb.append("parent=").append(parent);
             sb.append(", leftChild=").append(leftChild);
