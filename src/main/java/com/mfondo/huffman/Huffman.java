@@ -26,15 +26,21 @@ class Huffman {
 
     public static void readHuffmanEncoded(InputStream is, OutputStream os) throws IOException {
         BitInputStream bis = new BitInputStream(is);
-        Map<Byte, Bits> byteBitsMap = readByteBitsMap(bis);
-        Node rootNode = new Node();
-        buildTreeFromMap(rootNode, byteBitsMap);
-        Bits bits = new Bits();
-        bis.readBits(bits, (byte)Byte.SIZE);
-        int cnt = bits.data;
-        //todo this only reads one chunk
-        for(int i = 0; i < cnt; i++) {
-            readByte(rootNode, bis, os);
+        try {
+            while(true) {
+                //read chunks until eof
+                Map<Byte, Bits> byteBitsMap = readByteBitsMap(bis);
+                Node rootNode = new Node();
+                buildTreeFromMap(rootNode, byteBitsMap);
+                Bits bits = new Bits();
+                bis.readBits(bits, (byte) Byte.SIZE);
+                int cnt = bits.data;
+                for (int i = 0; i < cnt; i++) {
+                    readByte(rootNode, bis, os);
+                }
+            }
+        } catch (EOFException e) {
+            //ignore
         }
     }
 
@@ -64,21 +70,25 @@ class Huffman {
         byte[] buffer = new byte[bufferSize];
         int offset = 0;
         int cnt;
+        BitOutputStream bos = new BitOutputStream(os);
         while((cnt = is.read(buffer, offset, buffer.length - offset)) >= 0) {
             offset += cnt;
             if(offset >= buffer.length) {
-                writeHuffmanEncoded(buffer, cnt, os);
+                writeHuffmanEncoded(buffer, offset, bos);
                 offset = 0;
             }
         }
-        //todo writeHuffmanEncoded on what is left in buffer
+        if(offset > 0) {
+            //todo wrong
+            writeHuffmanEncoded(buffer, offset, bos);
+        }
+        bos.flush();
     }
 
-    private static void writeHuffmanEncoded(byte[] buffer, int length, OutputStream os) throws IOException {
+    private static void writeHuffmanEncoded(byte[] buffer, int length, BitOutputStream bitOutputStream) throws IOException {
         Node rootParent = buildTree(buffer, length);
         Map<Byte, Bits> byteBitsMap = new HashMap<>();
         populateEncodedBits(rootParent, new Bits(), byteBitsMap);
-        BitOutputStream bitOutputStream = new BitOutputStream(os);
         writeByteBitsMap(byteBitsMap, bitOutputStream);
         Bits bits = new Bits();
         bits.setData((byte)length);
@@ -87,7 +97,6 @@ class Huffman {
             bits = byteBitsMap.get(data);
             bitOutputStream.write(bits);
         }
-        bitOutputStream.flush();//todo this will not work if this method called on multiple chunks
     }
 
     static void writeByteBitsMap(Map<Byte, Bits> byteBitsMap, BitOutputStream bos) throws IOException {

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -56,6 +57,19 @@ public class HuffmanTest {
         assertReadEncodedByte(rootNode, (byte)1, new Bits("0"));
         assertReadEncodedByte(rootNode, (byte)2, new Bits("10"));
         assertReadEncodedByte(rootNode, (byte)3, new Bits("110"));
+    }
+
+    @Test
+    public void testEncodeDecode() throws IOException {
+        assertEncodeDecode(new byte[] {1, 2, 3, 4, 5}, 100);
+    }
+
+    private void assertEncodeDecode(byte[] bytes, int bufferSize) throws IOException {
+        ByteArrayOutputStream tmpOs = new ByteArrayOutputStream();
+        Huffman.writeHuffmanEncoded(new ByteArrayInputStream(bytes), tmpOs, bufferSize);
+        ByteArrayOutputStream outputOs = new ByteArrayOutputStream();
+        Huffman.readHuffmanEncoded(new ByteArrayInputStream(tmpOs.toByteArray()), outputOs);
+        assertArrayEquals(bytes, outputOs.toByteArray());
     }
 
     private void assertReadEncodedByte(Huffman.Node rootNode, byte expectedData, Bits bits) throws IOException {
