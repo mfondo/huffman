@@ -47,22 +47,18 @@ class Huffman {
     static void readByte(Node rootNode, BitInputStream bis, OutputStream os) throws IOException {
         boolean bit;
         Node node = rootNode;
-        try {
-            while(true) {
-                bit = bis.readBit();
-                if (bit) {
-                    node = node.leftChild;
-                } else {
-                    node = node.rightChild;
-                }
-                if (node.data != null) {
-                    //found a leaf node
-                    os.write(node.data);
-                    node = rootNode;//todo?
-                }
+        while(true) {
+            bit = bis.readBit();
+            if (bit) {
+                node = node.leftChild;
+            } else {
+                node = node.rightChild;
             }
-        } catch (EOFException e) {
-            //end of file, ignore todo this right?
+            if (node.data != null) {
+                //found a leaf node
+                os.write(node.data);
+                break;
+            }
         }
     }
 
@@ -74,12 +70,11 @@ class Huffman {
         while((cnt = is.read(buffer, offset, buffer.length - offset)) >= 0) {
             offset += cnt;
             if(offset >= buffer.length) {
-                writeHuffmanEncoded(buffer, offset, bos);
+                writeHuffmanEncoded(buffer, buffer.length, bos);
                 offset = 0;
             }
         }
         if(offset > 0) {
-            //todo wrong
             writeHuffmanEncoded(buffer, offset, bos);
         }
         bos.flush();
@@ -93,7 +88,9 @@ class Huffman {
         Bits bits = new Bits();
         bits.setData((byte)length);
         bitOutputStream.write(bits);
-        for (byte data : buffer) {
+        byte data;
+        for(int i = 0; i < length; i++) {
+            data = buffer[i];
             bits = byteBitsMap.get(data);
             bitOutputStream.write(bits);
         }

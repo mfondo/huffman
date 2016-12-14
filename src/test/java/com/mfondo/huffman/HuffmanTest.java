@@ -62,6 +62,8 @@ public class HuffmanTest {
     @Test
     public void testEncodeDecode() throws IOException {
         assertEncodeDecode(new byte[] {1, 2, 3, 4, 5}, 100);
+        assertEncodeDecode(new byte[] {1, 1, 2}, 100);
+        //todo lots more tests
     }
 
     private void assertEncodeDecode(byte[] bytes, int bufferSize) throws IOException {
